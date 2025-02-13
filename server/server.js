@@ -2,13 +2,19 @@ require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Erweiterte CSP-Header
 app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self' https://api.openai.com; connect-src 'self' https://api.openai.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        "default-src 'self' https://api.openai.com; " +
+        "connect-src 'self' https://api.openai.com; " +
+        "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com; " +
+        "img-src 'self' https://i.ytimg.com https://www.youtube.com; " +
+        "media-src 'self' https://www.youtube.com"
     );
     next();
 });
