@@ -215,9 +215,69 @@
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+
+        /* Neue Styles für Party-Mode */
+        .party-mode {
+            animation: colorChange 3s infinite;
+        }
+
+        .party-mode #chatbox {
+            animation: shake 0.5s infinite;
+        }
+
+        .party-mode .userMessage,
+        .party-mode .assistantMessage {
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes colorChange {
+            0% { background-color: #121212; }
+            25% { background-color: #1a0033; }
+            50% { background-color: #330033; }
+            75% { background-color: #330019; }
+            100% { background-color: #121212; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-1deg); }
+            75% { transform: translateX(5px) rotate(1deg); }
+        }
+
+        @keyframes rainbow {
+            0% { border-left-color: #ff0000; }
+            20% { border-left-color: #ff9900; }
+            40% { border-left-color: #33cc33; }
+            60% { border-left-color: #3399ff; }
+            80% { border-left-color: #cc33cc; }
+            100% { border-left-color: #ff0000; }
+        }
+
+        .disco-ball {
+            position: fixed;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            transition: top 0.5s;
+            z-index: 1000;
+            display: none;
+        }
+
+        .disco-ball.show {
+            top: 20px;
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <img src="https://api.iconify.design/noto:disco-ball.svg" class="disco-ball" id="discoBall" alt="Disco Ball">
     <button id="secretButton">👀 Geheim</button>
 
     <div id="background-video">
@@ -261,6 +321,8 @@
         let recognition = null;
         let isPlaying = false;
         let isListening = false;
+        let partyMode = false;
+        let secretCode = "123";
 
         function loadVoice() {
             const voices = speechSynthesis.getVoices();
@@ -271,6 +333,9 @@
         }
 
         function displayMessage(role, text) {
+            if (partyMode && role === 'assistant') {
+                text = "🎉 " + text + " 🎉";
+            }
             const messageDiv = document.createElement('div');
             messageDiv.className = `${role}Message`;
             
@@ -297,6 +362,14 @@
         async function sendMessage() {
             const userText = elements.userInput.value.trim();
             if (!userText) return;
+
+            // Überprüfe auf das geheime Codewort
+            if (userText.toLowerCase() === secretCode) {
+                displayMessage('assistant', '🎉 PARTY TIME! 🎉');
+                togglePartyMode();
+                elements.userInput.value = "";
+                return;
+            }
 
             displayMessage('user', userText);
             elements.userInput.value = "";
@@ -451,6 +524,23 @@
             elements.micBtn.textContent = "🎤 Spracheingabe";
             elements.micBtn.classList.remove('recording');
             recognition = null;
+        }
+
+        function togglePartyMode() {
+            partyMode = !partyMode;
+            document.body.classList.toggle('party-mode');
+            const discoBall = document.getElementById('discoBall');
+            discoBall.style.display = partyMode ? 'block' : 'none';
+            discoBall.classList.toggle('show');
+            
+            if (partyMode) {
+                // Play "Never Gonna Give You Up"
+                elements.videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&loop=1";
+                elements.backgroundVideo.style.display = "block";
+            } else {
+                elements.videoIframe.src = "https://www.youtube.com/embed/z0HK0HwpKyM?autoplay=1&mute=1&loop=1";
+                elements.backgroundVideo.style.display = "none";
+            }
         }
 
         // Event Listeners
