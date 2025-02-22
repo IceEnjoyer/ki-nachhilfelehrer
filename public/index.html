@@ -275,6 +275,8 @@
             to { transform: translateX(-50%) rotate(360deg); }
         }
     </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <img src="https://api.iconify.design/noto:disco-ball.svg" class="disco-ball" id="discoBall" alt="Disco Ball">
@@ -534,19 +536,23 @@
             discoBall.classList.toggle('show');
             
             if (partyMode) {
-                // Play "Never Gonna Give You Up"
-                elements.videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&loop=1";
+                // Video aktivieren mit neuem Video-Link
+                elements.videoIframe.src = "https://www.youtube.com/embed/--IgqBqSyIY?autoplay=1&mute=0&controls=0&showinfo=0&rel=0&loop=1&playlist=--IgqBqSyIY";
                 elements.backgroundVideo.style.display = "block";
             } else {
-                elements.videoIframe.src = "https://www.youtube.com/embed/z0HK0HwpKyM?autoplay=1&mute=1&loop=1";
+                // Video deaktivieren
+                elements.videoIframe.src = "";
                 elements.backgroundVideo.style.display = "none";
             }
         }
 
         // Event Listeners
         elements.secretButton.addEventListener("click", () => {
-            elements.backgroundVideo.style.display = "block";
+            // Stattdessen das Codewort in das Eingabefeld einfügen
+            elements.userInput.value = secretCode;
             elements.secretButton.style.display = "none";
+            // Automatisch senden auslösen
+            sendMessage();
         });
 
         elements.sendBtn.addEventListener("click", sendMessage);
@@ -568,6 +574,21 @@
 
         // Welcome message
         displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+
+        const quickResponses = `
+        <div class="quick-responses">
+            <button onclick="sendQuickQuestion('Erkläre nochmal')">❓ Nochmal erklären</button>
+            <button onclick="sendQuickQuestion('Gib ein Beispiel')">📝 Beispiel</button>
+            <button onclick="sendQuickQuestion('Zusammenfassen')">📚 Zusammenfassen</button>
+        </div>
+        `;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') sendMessage();
+            if (e.ctrlKey && e.key === 's') toggleSpeech();
+            if (e.ctrlKey && e.key === 'm') startSpeechRecognition();
+            if (e.ctrlKey && e.key === 'l') toggleTheme();
+        });
     </script>
 </body>
 </html>
