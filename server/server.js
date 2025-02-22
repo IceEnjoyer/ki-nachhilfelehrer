@@ -8,13 +8,15 @@ const port = process.env.PORT || 3000;
 app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self' https://api.openai.com; " +
-        "connect-src 'self' https://api.openai.com; " +
-        "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com; " +
-        "img-src 'self' https://i.ytimg.com https://www.youtube.com; " +
-        "media-src 'self' https://www.youtube.com"
+        [
+            "default-src 'self' https://api.openai.com",
+            "connect-src 'self' https://api.openai.com",
+            "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com",
+            "style-src 'self' 'unsafe-inline'",
+            "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+            "img-src 'self' https://i.ytimg.com https://www.youtube.com",
+            "media-src 'self' https://www.youtube.com"
+        ].join('; ')
     );
     next();
 });
