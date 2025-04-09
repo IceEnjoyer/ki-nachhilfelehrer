@@ -703,10 +703,6 @@
             speechSynthesis.onvoiceschanged = loadVoice;
         }
 
-        if (!loadChat()) {
-            displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
-        }
-
         const quickResponses = `
         <div class="quick-responses">
             <button onclick="sendQuickQuestion('Erkläre nochmal')">❓ Nochmal erklären</button>
@@ -722,9 +718,11 @@
             if (e.ctrlKey && e.key === 'l') toggleTheme();
         });
 
-        if (!loadChat()) {
-            displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!loadChat()) {
+                displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+            }
+        });
     </script>
 </body>
 </html>
