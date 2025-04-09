@@ -580,58 +580,68 @@
         function exportChat() {
             const chatContent = elements.chatbox.cloneNode(true);
             
-            // Styling für den Export
-            const exportStyle = `
-                <style>
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        padding: 20px;
-                        background-color: white;
-                    }
-                    .userMessage, .assistantMessage {
-                        background-color: white !important;
-                        color: black !important;
-                        border: 1px solid #ccc !important;
-                        margin-bottom: 10px !important;
-                        padding: 15px !important;
-                        border-radius: 8px !important;
-                        page-break-inside: avoid !important;
-                    }
-                    .userMessage strong { color: #0066cc !important; }
-                    .assistantMessage strong { color: #28a745 !important; }
-                    code, pre {
-                        background-color: #f0f0f0 !important;
-                        color: #333 !important;
-                        padding: 2px 4px !important;
-                        border-radius: 4px !important;
-                        font-family: monospace !important;
-                    }
-                </style>
+            // Create a standalone HTML document for export
+            const exportDoc = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Chat Export</title>
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            padding: 20px;
+                            background-color: white;
+                            color: black;
+                        }
+                        .userMessage, .assistantMessage {
+                            background-color: white;
+                            color: black;
+                            border: 1px solid #ccc;
+                            margin-bottom: 10px;
+                            padding: 15px;
+                            border-radius: 8px;
+                        }
+                        .userMessage strong { color: #0066cc; }
+                        .assistantMessage strong { color: #28a745; }
+                        code, pre {
+                            background-color: #f0f0f0;
+                            color: #333;
+                            padding: 2px 4px;
+                            border-radius: 4px;
+                            font-family: monospace;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${chatContent.outerHTML}
+                </body>
+                </html>
             `;
 
-            // PDF Optionen
-            const opt = {
-                margin: 1,
-                filename: 'chat-export.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#FFFFFF'
-                },
-                jsPDF: { 
-                    unit: 'cm', 
-                    format: 'a4', 
-                    orientation: 'portrait'
-                }
-            };
-
-            // Erstelle temporäres DIV für den Export
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = exportStyle + chatContent.outerHTML;
+            // Create Blob and download link
+            const blob = new Blob([exportDoc], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chat-export.html';
+            document.body.appendChild(a);
+            a.click();
             
-            // Generiere und downloade PDF
-            html2pdf().set(opt).from(tempDiv).save();
+            // Cleanup
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // Convert to PDF using browser print dialog
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(exportDoc);
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+                // Optional: Close the print window after a delay
+                setTimeout(() => printWindow.close(), 1000);
+            }, 500);
         }
 
         // Event Listeners
