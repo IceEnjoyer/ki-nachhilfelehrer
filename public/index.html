@@ -274,9 +274,28 @@
             from { transform: translateX(-50%) rotate(0deg); }
             to { transform: translateX(-50%) rotate(360deg); }
         }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <img src="https://api.iconify.design/noto:disco-ball.svg" class="disco-ball" id="discoBall" alt="Disco Ball">
@@ -298,6 +317,7 @@
         <button id="sendBtn">Senden</button>
         <button id="micBtn">🎤 Spracheingabe</button>
         <button id="speakBtn" disabled>🔊 Antwort vorlesen</button>
+        <button id="exportBtn">📥 Chat exportieren</button>
     </div>
 
     <select id="voiceSelector">
@@ -314,7 +334,8 @@
             voiceSelector: document.getElementById("voiceSelector"),
             secretButton: document.getElementById("secretButton"),
             backgroundVideo: document.getElementById("background-video"),
-            videoIframe: document.getElementById("videoIframe")
+            videoIframe: document.getElementById("videoIframe"),
+            exportBtn: document.getElementById("exportBtn")
         };
 
         let currentUtterance = null;
@@ -536,23 +557,78 @@
             discoBall.classList.toggle('show');
             
             if (partyMode) {
-                // Video aktivieren mit neuem Video-Link
-                elements.videoIframe.src = "https://www.youtube.com/embed/--IgqBqSyIY?autoplay=1&mute=0&controls=0&showinfo=0&rel=0&loop=1&playlist=--IgqBqSyIY";
+                elements.videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=dQw4w9WgXcQ";
                 elements.backgroundVideo.style.display = "block";
             } else {
-                // Video deaktivieren
                 elements.videoIframe.src = "";
                 elements.backgroundVideo.style.display = "none";
             }
         }
 
+        function toggleVideo() {
+            const isVideoPlaying = elements.backgroundVideo.style.display === "block";
+            
+            if (!isVideoPlaying) {
+                elements.videoIframe.src = "https://www.youtube.com/embed/z0HK0HwpKyM?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=z0HK0HwpKyM";
+                elements.backgroundVideo.style.display = "block";
+            } else {
+                elements.videoIframe.src = "";
+                elements.backgroundVideo.style.display = "none";
+            }
+        }
+
+        function exportChat() {
+            // Erstelle eine Kopie des Chatbox-Inhalts
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = elements.chatbox.innerHTML;
+            
+            // Stil für besseren Kontrast im PDF
+            const exportStyle = `
+                <style>
+                    .userMessage, .assistantMessage {
+                        background-color: white !important;
+                        color: black !important;
+                        border: 1px solid #ccc !important;
+                        margin-bottom: 10px !important;
+                        padding: 15px !important;
+                        border-radius: 8px !important;
+                    }
+                    .userMessage strong {
+                        color: #0066cc !important;
+                    }
+                    .assistantMessage strong {
+                        color: #28a745 !important;
+                    }
+                    .userMessage code, .assistantMessage code,
+                    .userMessage pre, .assistantMessage pre {
+                        background-color: #f0f0f0 !important;
+                        color: #333 !important;
+                        padding: 2px 4px !important;
+                        border-radius: 4px !important;
+                    }
+                </style>
+            `;
+            
+            // PDF-Optionen
+            const opt = {
+                margin: 1,
+                filename: 'chat-export.pdf',
+                html2canvas: { scale: 2 },
+                jsPDF: { 
+                    unit: 'in', 
+                    format: 'letter', 
+                    orientation: 'portrait'
+                }
+            };
+
+            // Export mit verbessertem Styling
+            html2pdf().set(opt).from(exportStyle + tempDiv.innerHTML).save();
+        }
+
         // Event Listeners
         elements.secretButton.addEventListener("click", () => {
-            // Stattdessen das Codewort in das Eingabefeld einfügen
-            elements.userInput.value = secretCode;
+            toggleVideo();
             elements.secretButton.style.display = "none";
-            // Automatisch senden auslösen
-            sendMessage();
         });
 
         elements.sendBtn.addEventListener("click", sendMessage);
@@ -565,6 +641,7 @@
         });
         // Update the event listener for the mic button:
         elements.micBtn.addEventListener("click", startSpeechRecognition);
+        elements.exportBtn.addEventListener("click", exportChat);
 
         // Initialize voice
         if (typeof speechSynthesis !== "undefined") {
