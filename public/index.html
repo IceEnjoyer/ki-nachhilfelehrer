@@ -337,7 +337,6 @@
             backgroundVideo: document.getElementById("background-video"),
             videoIframe: document.getElementById("videoIframe"),
             exportBtn: document.getElementById("exportBtn"),
-            clearChatBtn: document.getElementById("clearChatBtn"),
             clearBtn: document.getElementById("clearBtn")
         };
 
@@ -690,7 +689,6 @@
         });
         elements.micBtn.addEventListener("click", startSpeechRecognition);
         elements.exportBtn.addEventListener("click", exportChat);
-        elements.clearChatBtn.addEventListener("click", clearChat);
         elements.clearBtn.addEventListener("click", () => {
             if (confirm("Möchtest du wirklich den gesamten Chat löschen?")) {
                 localStorage.removeItem('chatHistory');
@@ -723,6 +721,10 @@
             if (e.ctrlKey && e.key === 'm') startSpeechRecognition();
             if (e.ctrlKey && e.key === 'l') toggleTheme();
         });
+
+        if (!loadChat()) {
+            displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+        }
     </script>
 </body>
 </html>
