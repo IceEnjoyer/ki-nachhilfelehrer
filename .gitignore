@@ -1,7 +1,14 @@
-<<<<<<< HEAD
+# Dependencies
 node_modules/
+jspm_packages/
+
+# Environment variables
 .env
-=======
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
 # Logs
 logs
 *.log
@@ -10,6 +17,12 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+
+# Build output
+dist/
+build/
+.next/
+out/
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -42,10 +55,6 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directories
-node_modules/
-jspm_packages/
-
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -76,24 +85,12 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-out
-
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -132,4 +129,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
->>>>>>> ad2542857038caf57c1cad5f1fa2fe93bb7968ab
