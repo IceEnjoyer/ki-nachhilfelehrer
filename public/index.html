@@ -578,13 +578,16 @@
         }
 
         function exportChat() {
-            // Erstelle eine Kopie des Chatbox-Inhalts
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = elements.chatbox.innerHTML;
+            const chatContent = elements.chatbox.cloneNode(true);
             
-            // Stil für besseren Kontrast im PDF
+            // Styling für den Export
             const exportStyle = `
                 <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        padding: 20px;
+                        background-color: white;
+                    }
                     .userMessage, .assistantMessage {
                         background-color: white !important;
                         color: black !important;
@@ -592,37 +595,43 @@
                         margin-bottom: 10px !important;
                         padding: 15px !important;
                         border-radius: 8px !important;
+                        page-break-inside: avoid !important;
                     }
-                    .userMessage strong {
-                        color: #0066cc !important;
-                    }
-                    .assistantMessage strong {
-                        color: #28a745 !important;
-                    }
-                    .userMessage code, .assistantMessage code,
-                    .userMessage pre, .assistantMessage pre {
+                    .userMessage strong { color: #0066cc !important; }
+                    .assistantMessage strong { color: #28a745 !important; }
+                    code, pre {
                         background-color: #f0f0f0 !important;
                         color: #333 !important;
                         padding: 2px 4px !important;
                         border-radius: 4px !important;
+                        font-family: monospace !important;
                     }
                 </style>
             `;
-            
-            // PDF-Optionen
+
+            // PDF Optionen
             const opt = {
                 margin: 1,
                 filename: 'chat-export.pdf',
-                html2canvas: { scale: 2 },
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#FFFFFF'
+                },
                 jsPDF: { 
-                    unit: 'in', 
-                    format: 'letter', 
+                    unit: 'cm', 
+                    format: 'a4', 
                     orientation: 'portrait'
                 }
             };
 
-            // Export mit verbessertem Styling
-            html2pdf().set(opt).from(exportStyle + tempDiv.innerHTML).save();
+            // Erstelle temporäres DIV für den Export
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = exportStyle + chatContent.outerHTML;
+            
+            // Generiere und downloade PDF
+            html2pdf().set(opt).from(tempDiv).save();
         }
 
         // Event Listeners
