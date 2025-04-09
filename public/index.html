@@ -412,7 +412,7 @@
                         messages: [
                             { 
                                 role: "system", 
-                                content: "Du bist ein KI-Nachhilfelehrer. Antworte klar, präzise und hilfreich."
+                                content: "Du bist eine Schülernachhilfe, und fragst am anfang der Konversation , wie, und in welchem Fach, du helfen kannst, du versuchst, die Dinge möglichst zielstrebig zu erklären. Falls man dich fragt, ob du eine Aufgabe lösen kannst, löse sie nicht, sondern versuche Tipps zu geben, und zu erklären, so dass man von selbst drauf kommt, gib niemals von selbst die Lösung. Das ist wirklich Wichtig, dass du nicht einfach aufgaben löst, niemals. Wenn man z.B. fragt, was ist Frage dann gib nicht die Lösung."
                             },
                             ...messageHistory.map(msg => ({
                                 role: msg.role === 'user' ? 'user' : 'assistant',
