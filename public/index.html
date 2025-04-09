@@ -318,6 +318,7 @@
         <button id="micBtn">🎤 Spracheingabe</button>
         <button id="speakBtn" disabled>🔊 Antwort vorlesen</button>
         <button id="exportBtn">📥 Chat exportieren</button>
+        <button id="clearBtn">🗑️ Chat löschen</button>
     </div>
 
     <select id="voiceSelector">
@@ -335,7 +336,9 @@
             secretButton: document.getElementById("secretButton"),
             backgroundVideo: document.getElementById("background-video"),
             videoIframe: document.getElementById("videoIframe"),
-            exportBtn: document.getElementById("exportBtn")
+            exportBtn: document.getElementById("exportBtn"),
+            clearChatBtn: document.getElementById("clearChatBtn"),
+            clearBtn: document.getElementById("clearBtn")
         };
 
         let currentUtterance = null;
@@ -346,13 +349,34 @@
         let isListening = false;
         let partyMode = false;
         let secretCode = "123";
+        let lastMessage = null; // Am Anfang bei den anderen Variablen hinzufügen
 
-        function loadVoice() {
-            const voices = speechSynthesis.getVoices();
-            selectedVoice = voices.find(voice => voice.lang === "de-DE" && voice.name.includes("Google"));
-            if (!selectedVoice) {
-                console.warn("Google Deutsch-Stimme nicht gefunden.");
+        function saveChat() {
+            const chatHistory = {
+                messages: messageHistory,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        function loadChat() {
+            const savedChat = localStorage.getItem('chatHistory');
+            if (savedChat) {
+                const chatHistory = JSON.parse(savedChat);
+                const now = new Date().getTime();
+                const hours24 = 24 * 60 * 60 * 1000;
+                
+                if (now - chatHistory.timestamp < hours24) {
+                    chatHistory.messages.forEach(msg => {
+                        displayMessage(msg.role, msg.content);
+                    });
+                    messageHistory = chatHistory.messages;
+                    return true;
+                } else {
+                    localStorage.removeItem('chatHistory');
+                }
             }
+            return false;
         }
 
         function displayMessage(role, text) {
@@ -362,17 +386,11 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `${role}Message`;
             
-            // Formatierte Ausgabe erstellen
             let formattedText = text
-                // Codeblöcke mit ``` formatieren
                 .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-                // Einfache Codeausdrücke mit ` formatieren
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
-                // Aufzählungen formatieren
                 .replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>')
-                // Absätze durch doppelte Zeilenumbrüche
                 .replace(/\n\n/g, '</p><p>')
-                // Links formatieren
                 .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
 
             messageDiv.innerHTML = `<strong>${role === 'user' ? 'Du' : 'KI'}:</strong> <p>${formattedText}</p>`;
@@ -380,13 +398,13 @@
             elements.chatbox.scrollTop = elements.chatbox.scrollHeight;
             elements.speakBtn.disabled = false;
             messageHistory.push({ role, content: text });
+            saveChat();
         }
 
         async function sendMessage() {
             const userText = elements.userInput.value.trim();
             if (!userText) return;
 
-            // Überprüfe auf das geheime Codewort
             if (userText.toLowerCase() === secretCode) {
                 displayMessage('assistant', '🎉 PARTY TIME! 🎉');
                 togglePartyMode();
@@ -447,10 +465,7 @@
                 return;
             }
 
-            // Remove "KI:" or "Du:" prefix from the text
             const cleanText = text.replace(/^(KI|Du):\s+/i, '');
-
-            // Split long text into smaller chunks
             const chunks = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
             let currentChunk = 0;
 
@@ -481,7 +496,6 @@
                 isPlaying = false;
             }
 
-            // Start speaking
             isPlaying = true;
             elements.speakBtn.textContent = "❌ Abbrechen";
             speakChunk();
@@ -580,7 +594,6 @@
         function exportChat() {
             const chatContent = elements.chatbox.cloneNode(true);
             
-            // Create a standalone HTML document for export
             const exportDoc = `
                 <!DOCTYPE html>
                 <html>
@@ -619,7 +632,6 @@
                 </html>
             `;
 
-            // Create Blob and download link
             const blob = new Blob([exportDoc], { type: 'text/html' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -628,23 +640,41 @@
             document.body.appendChild(a);
             a.click();
             
-            // Cleanup
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            // Convert to PDF using browser print dialog
             const printWindow = window.open('', '_blank');
             printWindow.document.write(exportDoc);
             printWindow.document.close();
             
             setTimeout(() => {
                 printWindow.print();
-                // Optional: Close the print window after a delay
                 setTimeout(() => printWindow.close(), 1000);
             }, 500);
         }
 
-        // Event Listeners
+        function clearChat() {
+            elements.chatbox.innerHTML = "";
+            messageHistory = [];
+            localStorage.removeItem('chatHistory');
+        }
+
+        function loadVoice() {
+            const voices = speechSynthesis.getVoices();
+            const germanVoices = voices.filter(voice => voice.lang.includes('de-DE'));
+            if (germanVoices.length > 0) {
+                selectedVoice = germanVoices[0];
+                elements.voiceSelector.innerHTML = germanVoices
+                    .map(voice => `<option value="${voice.name}">${voice.name}</option>`)
+                    .join('');
+            }
+        }
+
+        function sendQuickQuestion(question) {
+            elements.userInput.value = question;
+            sendMessage();
+        }
+
         elements.secretButton.addEventListener("click", () => {
             toggleVideo();
             elements.secretButton.style.display = "none";
@@ -658,18 +688,26 @@
             const lastMessage = elements.chatbox.lastElementChild;
             if (lastMessage) toggleSpeech(lastMessage.textContent);
         });
-        // Update the event listener for the mic button:
         elements.micBtn.addEventListener("click", startSpeechRecognition);
         elements.exportBtn.addEventListener("click", exportChat);
+        elements.clearChatBtn.addEventListener("click", clearChat);
+        elements.clearBtn.addEventListener("click", () => {
+            if (confirm("Möchtest du wirklich den gesamten Chat löschen?")) {
+                localStorage.removeItem('chatHistory');
+                elements.chatbox.innerHTML = '';
+                messageHistory = [];
+                displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+            }
+        });
 
-        // Initialize voice
         if (typeof speechSynthesis !== "undefined") {
             loadVoice();
             speechSynthesis.onvoiceschanged = loadVoice;
         }
 
-        // Welcome message
-        displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+        if (!loadChat()) {
+            displayMessage('assistant', 'Hallo! Ich bin dein KI-Nachhilfelehrer. Wie kann ich dir heute helfen?');
+        }
 
         const quickResponses = `
         <div class="quick-responses">
