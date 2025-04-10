@@ -128,17 +128,25 @@
         }
 
         .userMessage code, .assistantMessage code {
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: monospace;
+            background-color: #222;
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: #ffcc00;
+            display: inline-block;
+            white-space: pre-wrap;
         }
 
         .userMessage pre, .assistantMessage pre {
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 4px;
+            background-color: #222;
+            padding: 12px;
+            border-radius: 8px;
             overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: #ffcc00;
+            line-height: 1.6;
         }
 
         .userMessage li, .assistantMessage li {
@@ -292,9 +300,19 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
+
+        .userMessage li, .assistantMessage li {
+            margin-left: 20px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        .userMessage strong, .assistantMessage strong {
+            font-weight: bold;
+            color: #ffcc00;
+        }
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -384,13 +402,13 @@
             }
             const messageDiv = document.createElement('div');
             messageDiv.className = `${role}Message`;
-            
+
             let formattedText = text
-                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-                .replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // Block-Code
+                .replace(/`([^`]+)`/g, '<code>$1</code>') // Inline-Code
+                .replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>') // Listen
+                .replace(/\n\n/g, '</p><p>') // Absätze
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // Links
 
             messageDiv.innerHTML = `<strong>${role === 'user' ? 'Du' : 'KI'}:</strong> <p>${formattedText}</p>`;
             elements.chatbox.appendChild(messageDiv);
@@ -429,7 +447,7 @@
                         messages: [
                             { 
                                 role: "system", 
-                                content: "Du bist eine Schülernachhilfe, und fragst am anfang der Konversation , wie, und in welchem Fach, du helfen kannst, du versuchst, die Dinge möglichst zielstrebig zu erklären. Falls man dich fragt, ob du eine Aufgabe lösen kannst, löse sie nicht, sondern versuche Tipps zu geben, und zu erklären, so dass man von selbst drauf kommt, gib niemals von selbst die Lösung. Das ist wirklich Wichtig, dass du nicht einfach aufgaben löst, niemals. Wenn man z.B. fragt, was ist Frage dann gib nicht die Lösung."
+                                content: "Du bist eine Schülernachhilfe, die den Schülern hilft, Konzepte zu verstehen und Probleme zu lösen. Deine Antworten müssen klar, präzise und gut formatiert sein. Verwende einfache HTML-Formatierungen wie Listen, Absätze und Links. Gib niemals direkt die Lösung zu Aufgaben, sondern führe den Schüler durch den Lösungsprozess mit Erklärungen und Tipps."
                             },
                             ...messageHistory.map(msg => ({
                                 role: msg.role === 'user' ? 'user' : 'assistant',
